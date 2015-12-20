@@ -78,14 +78,11 @@ Baudrate: 1200,8,N,1
     * 0x39,0x3A: 29"
     * 0x3B,0x3C: 30"
 * 25: Speedmeter Model/Speedmeter Signal 01
-s:=redata[25];
-t:=s mod 64;
-n:=s div 64;
-if n=3 then
-   ComboBox5.ItemIndex:=2
-else
-   ComboBox5.ItemIndex:=n;
-Edit22.Text:=inttostr(t);
+	* Bits 1-2 (Model)
+		* 00: External
+		* 01: Internal
+		* 10: Motorphase
+	* Bits 3-6 (Speedmeter Signals)
 * 26: Checksum? 0xDF
 
 ## Command: Read Pedal
@@ -126,7 +123,7 @@ Edit22.Text:=inttostr(t);
 
 ## Command: Read Throttle
 * **Send:** 0x11 0x54
-* **Response:** 54 06 0B 23 00 03 14 AC
+* **Response:** 54 06 0B 23 00 03 11 14 AC
 
 ### Response (description):
 * 00: 0x54
@@ -142,15 +139,49 @@ Edit22.Text:=inttostr(t);
 * 06: Speed Limited (14 - 20)
     * 0x0F-0x28: Speed Limit in km/h
     * 0xFF: By Display's Command
-* 07: Start Current in % (AC ?????)
+* 07: Start Current in % (14 - 20)
+* 08: Checksum ? (0xAC)
 	
 ## Command: Set Basic
-* **Send:** ????
+* **Send:** 0x16 0x52 0x24 3..26 
 * **Response:** 0x52 0x24
 
 ### Response (description):
 * 00: 0x52
 * 01: Result Code
+    * 0x00: Low Battery Protect Setting Error
+    * 0x01: Limited Current Setting Error
+    * 0x02: Limit Current Assist0 Error
+    * 0x03: Limit Current Assist1 Error
+    * 0x04: Limit Current Assist2 Error
+    * 0x05: Limit Current Assist3 Error
+    * 0x06: Limit Current Assist4 Error
+    * 0x07: Limit Current Assist5 Error
+    * 0x08: Limit Current Assist6 Error
+    * 0x09: Limit Current Assist7 Error
+    * 0x0A: Limit Current Assist8 Error
+    * 0x0B: Limit Current Assist9 Error
+    * 0x0C: Limit Speed Assist0 Error
+    * 0x0D: Limit Speed Assist1 Error
+    * 0x0E: Limit Speed Assist2 Error
+    * 0x0F: Limit Speed Assist3 Error
+    * 0x10: Limit Speed Assist4 Error
+    * 0x11: Limit Speed Assist5 Error
+    * 0x12: Limit Speed Assist6 Error
+    * 0x13: Limit Speed Assist7 Error
+    * 0x14: Limit Speed Assist8 Error
+    * 0x15: Limit Speed Assist9 Error	
+    * 0x16: Speedmeter Setting Error
+    * 0x17: Speedmeter Signal Setting Error
+    * 0x18: Success 
+
+## Command: Set Pedal
+* **Send:** 0x16 0x53 0x11 3..13 14(Checksum)
+* **Response:** 0x53 0x24
+
+### Response (description):
+* 00: 0x53
+* 01: Result Code (TODO) 
     * 0x00: Low Battery Protect Setting Error
     * 0x01: Limited Current Setting Error
     * 0x02: Limit Current Assist0 Error

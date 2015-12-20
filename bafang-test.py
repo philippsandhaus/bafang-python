@@ -1,32 +1,35 @@
 import serial,time
+from construct import *
+from protocol import *
 
-with serial.Serial('/dev/tty.usbserial-DJ005O71', 1200, timeout=1) as ser:
-    print(ser.name)
-    ser.write("\x11\x51\x04\xB0\x05")
+ser = serial.Serial('/dev/tty.usbserial-DJ005O71', 1200, timeout=1)
+print(ser.name)
+
+def read_config(cm, answ_format):
+    #print cm.encode('hex')
+    ser.write(cm)
     ser.flush()
     time.sleep(1)
-    s = ser.read(100)
-    print(s)
+    answ = ser.read(100)
+    print answ.encode('hex')
+    #t = answ_format.parse(answ)
+    #print(t)
+
+read_config(connect_cmd.build(
+        Container()), 
+    info_message)
+
+read_config(read_cmd.build(
+        Container(command = 'BASIC')), 
+    basic_message)
+
+read_config(read_cmd.build(
+        Container(command = 'PEDAL')), 
+    pedal_message)
+
+read_config(read_cmd.build(
+        Container(command = 'THROTTLE')), 
+    throttle_message)
+
     
-    ser.write("\x11\x52")
-    ser.flush()
-    time.sleep(1)
-    s = ser.read(100)
-    print(s)
-    
-    
-    ser.write("\x11\x53")
-    ser.flush()
-    time.sleep(1)
-    s = ser.read(100)
-    print(s)
-    
-    
-    ser.write("\x11\x54")
-    ser.flush()
-    time.sleep(1)
-    s = ser.read(100)
-    print(s)
-    
-    ser.close()
-    
+ser.close()    
