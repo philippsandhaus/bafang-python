@@ -6,11 +6,25 @@ connect_cmd = Struct('connect',
 
 
 read_cmd = Struct('read',
-    Magic('\x11'),
+    Magic('\x11'), # read command
     Enum(Byte('command'),
         BASIC = 0x52,
         PEDAL = 0x53,
         THROTTLE = 0x54)
+)
+
+write_cmd = Struct('write',
+    Magic('\x16'), # write command
+    Enum(Byte('command'),
+        BASIC = 0x52,
+        PEDAL = 0x53,
+        THROTTLE = 0x54),
+    UBInt8("data_length"),
+    Bytes("data", lambda ctx: ctx.data_length)
+    #Enum(Integer('data_length'),
+    #    BASIC = 24,
+    #    PEDAL = 11,
+    #    THROTTLE = 6)
 )
 
 # 51 10 48 5a 58 54 53 5a 5a 36 32 32 32 30 31 31 01 14 1b

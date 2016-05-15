@@ -34,6 +34,7 @@ def serial_ports():
     return result
 
 ser = serial.Serial('/dev/tty.usbserial-DJ005O71', 1200, timeout=1)
+#ser = serial.Serial(serial_ports()[0], 1200, timeout=1)
 print(ser.name)
 
 def read_config(cm, answ_format):
