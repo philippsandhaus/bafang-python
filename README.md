@@ -13,7 +13,7 @@ Baudrate: 1200,8,N,1
 ### Response (description):
 
 * 00: 0x51 
-* 01: 0x10
+* 01: 0x10 (Length?)
 * 02-05: Manufacturer in ASCII (0x48 0x5A 0x58 0x54 -> HZXT)
 * 06-09: Model in ASCII (0x53 0x5A 0x5A 0x36 -> SZZ6)
 * 10-11: HW Version in ASCII {10}.{11} (0x32 0x32 -> 2.2)
@@ -37,7 +37,7 @@ Baudrate: 1200,8,N,1
 ### Response (description):
 
 * 00: 0x52 
-* 01: 0x18 
+* 01: 0x18 (Length?)
 * 02: Low Battery Protect (V) (0x1F -> 31)
 * 03: Limited Current (A) (0x0F -> 15) 
 * 04: Limit Current (%) Assist0 (0x00 -> 0) 
@@ -91,7 +91,7 @@ Baudrate: 1200,8,N,1
 
 ### Response (description):
 * 00: 0x53 
-* 01: 0x0B 
+* 01: 0x0B (Length?)
 * 02: Pedal Type (0x03)
     * 0x00: None
     * 0x01: DH-Sensor-12
@@ -127,7 +127,7 @@ Baudrate: 1200,8,N,1
 
 ### Response (description):
 * 00: 0x54
-* 01: 0x06
+* 01: 0x06 (Length?)
 * 02: Start Voltage *100mv (0x0B -> 11)
 * 03: End Voltage *100mv (0x23 -> 35)
 * 04: Mode
