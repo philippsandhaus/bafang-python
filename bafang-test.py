@@ -1,8 +1,9 @@
-import serial,time
-from construct import *
-from protocol import *
-import sys
-import glob
+from time import sleep
+from serial import Serial, SerialException
+from construct import Const
+from protocol import connect_cmd, info_message
+from sys import platform
+from glob import glob
 
 
 def serial_ports():
@@ -13,55 +14,53 @@ def serial_ports():
         :returns:
             A list of the serial ports available on the system
     """
-    if sys.platform.startswith('win'):
+    if platform.startswith('win'):
         ports = ['COM%s' % (i + 1) for i in range(256)]
-    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+    elif platform.startswith('linux') or platform.startswith('cygwin'):
         # this excludes your current terminal "/dev/tty"
-        ports = glob.glob('/dev/tty[A-Za-z]*')
-    elif sys.platform.startswith('darwin'):
-        ports = glob.glob('/dev/tty.*')
+        ports = glob('/dev/tty[A-Za-z]*')
+    elif platform.startswith('darwin'):
+        ports = glob('/dev/tty.*')
     else:
         raise EnvironmentError('Unsupported platform')
 
     result = []
     for port in ports:
         try:
-            s = serial.Serial(port)
+            s = Serial(port)
             s.close()
             result.append(port)
-        except (OSError, serial.SerialException):
+        except (OSError, SerialException):
             pass
     return result
 
-ser = serial.Serial('/dev/tty.usbserial-DJ005O71', 1200, timeout=1)
-#ser = serial.Serial(serial_ports()[0], 1200, timeout=1)
-print(ser.name)
+#ser = serial.Serial('/dev/tty.usbserial-DJ005O71', 1200, timeout=1)
+ser = Serial(serial_ports()[0], 1200, timeout=1)
+#print(ser.name)
 
 def read_config(cm, answ_format):
-    print cm.encode('hex')
+    print(cm)
     ser.write(cm)
     ser.flush()
-    time.sleep(1)
+    sleep(1)
     answ = ser.read(100)
-    print answ.encode('hex')
+    print(answ)
     t = answ_format.parse(answ)
     print(t)
 
-read_config(connect_cmd.build(
-        Container()), 
+read_config(connect_cmd.build(dict()), 
     info_message)
 
 read_config(read_cmd.build(
-        Container(command = 'BASIC')), 
+        dict(command = 'BASIC')), 
     basic_message)
 
 read_config(read_cmd.build(
-        Container(command = 'PEDAL')), 
+        dict(command = 'PEDAL')), 
     pedal_message)
 
 read_config(read_cmd.build(
-        Container(command = 'THROTTLE')), 
+        dict(command = 'THROTTLE')), 
     throttle_message)
 
-    
 ser.close()    

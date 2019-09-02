@@ -1,59 +1,60 @@
-from construct import *
+from construct import Const,Struct,Enum,Bytes,Byte,Array,BitStruct,BitsInteger
 
-connect_cmd = Struct('connect',
-    Magic('\x11\x51\x04\xB0\x05')
+connect_cmd = Struct(
+    'connect_cmd' / Const(b"\x11\x51\x04\xB0\x05")
 )
 
 
-read_cmd = Struct('read',
-    Magic('\x11'), # read command
-    Enum(Byte('command'),
+read_cmd = Struct(
+    'read_cmd' / Const(b"\x11"), # read command
+    'command' / Enum(Byte,
         BASIC = 0x52,
         PEDAL = 0x53,
         THROTTLE = 0x54)
 )
 
-write_cmd = Struct('write',
-    Magic('\x16'), # write command
-    Enum(Byte('command'),
-        BASIC = 0x52,
-        PEDAL = 0x53,
-        THROTTLE = 0x54),
-    UBInt8("data_length"),
-    Bytes("data", lambda ctx: ctx.data_length)
+write_cmd = Struct(
+        'write_cmd' / Const(b"\x16"), # write command
+        'command' / Enum(Byte,
+            BASIC = 0x52,
+            PEDAL = 0x53,
+            THROTTLE = 0x54),
+        'data_length' / Byte,
+        'data' / Bytes(5)
+    )
     #Enum(Integer('data_length'),
     #    BASIC = 24,
     #    PEDAL = 11,
     #    THROTTLE = 6)
-)
+
 
 # 51 10 48 5a 58 54 53 5a 5a 36 32 32 32 30 31 31 01 14 1b
-info_message = Struct('info',
-    Byte('command'),
-    Byte('status'),
-    Bytes('manufacturer',4),
-    Bytes('model',4),
-    Bytes('HW-Version',2),
-    Bytes('FW-Version',4),
-    Enum(Byte('Voltage'),
+info_message = Struct(
+    'info_message' / Byte,
+    'status' / Byte,
+    'manufacturer' / Bytes(4),
+    'model' / Bytes(4),
+    'HW-Version' / Bytes(2),
+    'FW-Version' / Bytes(4),
+    'Voltage' / Enum(Byte,
         VOLTAGE_24 = 0x00,
         VOLTAGE_36 = 0x01,
         VOLTAGE_48 = 0x02,
         VOLTAGE_60 = 0x03,
         VOLTAGE_24_48 = 0x04,
-        VOLTAGE_24_60 = Pass
+        VOLTAGE_24_60 = 0x05
     ),
-    Byte('max_current'),
-    Byte('checksum')
+    'max_current' / Byte,
+    'checksum' / Byte
 )
 
-basic_message = Struct('basic',
-    Magic('\x52\x18'),
-    Byte('low_battery_protect'),
-    Byte('limited_current'),
-    Array(10,ULInt8('limit_current_levels')),
-    Array(10,ULInt8('limit_speed_levels')),
-    Enum(Byte('wheel_diameter'),
+basic_message = Struct(
+    'basic_message' / Const(b"\x52\x18"),
+    'low_battery_protect' / Byte,
+    'limited_current' / Byte,
+    'limit_current_levels' / Array(10,Byte),
+    'limit_speed_levels' / Array(10,Byte),
+    'wheel_diameter' / Enum(Byte,
         INCH_16  = 0x1F,
         INCH_16a = 0x20,
         INCH_17  = 0x21,
@@ -86,27 +87,27 @@ basic_message = Struct('basic',
         INCH_30  = 0x3C,
         INCH_30a = 0x3D
     ),
-    BitStruct('Speedmeter',
-      Enum(BitField('Speedmeter_Model',2),
+    'Speedmeter' / BitStruct(
+      'Speedmeter_Model' / Enum(BitsInteger(2),
           EXTERNAL = 0b00,
           INTERNAL = 0b01,
           MOTORPHASE = 0b10
       ),
-      BitField('Signals',6)  
+      'Signals' / BitsInteger(6)  
     ),
-    Byte('Checksum')
+    'Checksum' / Byte
 )
 
 # 53 0b 03 ff ff 64 06 14 0a 19 08 14 14 27
-pedal_message = Struct('pedal',
-    Magic('\x53\x0B'),
-    Enum(Byte('pedal_type'),
+pedal_message = Struct(
+    'pedal_message' / Const(b"\x53\x0B"),
+    'pedal_type' / Enum(Byte,
         NONE             = 0x00,
         DH_SENSOR_12     = 0x01,
         BB_SENSOR_32     = 0x02,
         DOUBLE_SIGNAL_24 = 0x03
     ),
-    Enum(Byte('designated_assist'),
+    'designated_assist' / Enum(Byte,
         MODE_0  = 0x00,
         MODE_1  = 0x01,
         MODE_2  = 0x02,
@@ -119,28 +120,28 @@ pedal_message = Struct('pedal',
         MODE_9  = 0x09,
         DISPLAY = 0xFF
     ),
-    Byte('speed_limit'),
-    Byte('start_current'),
-    Byte('slow_start_mode'),
-    Byte('startup_degree'),
-    Byte('work_mode'),
-    Byte('time_of_stop'),
-    Byte('current_decay'),
-    Byte('stop_decay'),
-    Byte('keep_current'),
-    Byte('Checksum')
+    'speed_limit' / Byte,
+    'start_current' / Byte,
+    'slow_start_mode' / Byte,
+    'startup_degree' / Byte,
+    'work_mode' / Byte,
+    'time_of_stop' / Byte,
+    'current_decay' / Byte,
+    'stop_decay' / Byte,
+    'keep_current' / Byte,
+    'Checksum' / Byte
 )
 
 # 54 06 0b 23 00 03 11 14 ac
-throttle_message = Struct('throttle',
-    Magic('\x54\x06'),
-    Byte('start_voltage'), # x * 100mV
-    Byte('end_voltage'), # x * 100mV
-    Enum(Byte('mode'),
+throttle_message = Struct(
+    'throttle_message' / Const(b"\x54\x06"),
+    'start_voltage' / Byte, # x * 100mV
+    'end_voltage' / Byte, # x * 100mV
+    'mode' / Enum(Byte,
         SPEED   = 0x00,
         CURRENT = 0x01
     ),
-    Enum(Byte('designated_assist'),
+    'designated_assist' / Enum(Byte,
         MODE_0  = 0x00,
         MODE_1  = 0x01,
         MODE_2  = 0x02,
@@ -153,8 +154,8 @@ throttle_message = Struct('throttle',
         MODE_9  = 0x09,
         DISPLAY = 0xFF
     ),
-    Byte('speed_limited'),
-    Byte('start_current'),
-    Byte('Checksum')
+    'speed_limited' / Byte,
+    'start_current' / Byte,
+    'Checksum' / Byte
 )
 
