@@ -1,7 +1,7 @@
 from time import sleep
 from serial import Serial, SerialException
 from construct import Const
-from protocol import connect_cmd, info_message
+from protocol import connect_cmd, read_cmd, info_message, basic_message, pedal_message, throttle_message
 from sys import platform
 from glob import glob
 
@@ -48,7 +48,8 @@ def read_config(cm, answ_format):
     t = answ_format.parse(answ)
     print(t)
 
-read_config(connect_cmd.build(dict()), 
+read_config(connect_cmd.build(
+        dict()), 
     info_message)
 
 read_config(read_cmd.build(
