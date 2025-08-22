@@ -1,5 +1,5 @@
 construct==2.9.45
-future==0.17.1
+future==1.0.0
 iso8601==0.1.12
 protocol==0.1.0
 pyserial==3.4
