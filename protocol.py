@@ -1,4 +1,14 @@
-from construct import Const,Struct,Enum,Bytes,Byte,Array,BitStruct,BitsInteger
+from construct import (
+    Array,
+    BitStruct,
+    BitsInteger,
+    Byte,
+    Bytes,
+    Const,
+    Enum,
+    Struct,
+    this,
+)
 
 connect_cmd = Struct(
     'connect_cmd' / Const(b"\x11\x51\x04\xB0\x05")
@@ -15,12 +25,14 @@ read_cmd = Struct(
 
 write_cmd = Struct(
         'write_cmd' / Const(b"\x16"), # write command
-        'command' / Enum(Byte,
-            BASIC = 0x52,
-            PEDAL = 0x53,
-            THROTTLE = 0x54),
+        'command' / Enum(
+            Byte,
+            BASIC=0x52,
+            PEDAL=0x53,
+            THROTTLE=0x54,
+        ),
         'data_length' / Byte,
-        'data' / Bytes(5)
+        'data' / Bytes(this.data_length),
     )
     #Enum(Integer('data_length'),
     #    BASIC = 24,
