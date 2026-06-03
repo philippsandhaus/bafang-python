@@ -1,44 +1,39 @@
 from time import sleep
 from serial import Serial, SerialException
+from serial.tools.list_ports import comports
 from construct import Const
 from protocol import connect_cmd, read_cmd, info_message, basic_message, pedal_message, throttle_message
-from sys import platform
-from glob import glob
 
 
 def serial_ports():
-    """ Lists serial port names
+    """Lists serial port names using pyserial's built-in detection.
 
-        :raises EnvironmentError:
-            On unsupported or unknown platforms
-        :returns:
-            A list of the serial ports available on the system
+    Uses platform-specific APIs to enumerate serial ports efficiently,
+    avoiding expensive trial-and-error port opening.
+
+    :returns:
+        A list of available serial port names
+    :raises EnvironmentError:
+        If no serial ports are found
     """
-    if platform.startswith('win'):
-        ports = ['COM%s' % (i + 1) for i in range(256)]
-    elif platform.startswith('linux') or platform.startswith('cygwin'):
-        # this excludes your current terminal "/dev/tty"
-        ports = glob('/dev/tty[A-Za-z]*')
-    elif platform.startswith('darwin'):
-        ports = glob('/dev/tty.*')
-    else:
-        raise EnvironmentError('Unsupported platform')
+    ports = [port.device for port in comports()]
+    
+    if not ports:
+        raise EnvironmentError('No serial ports found')
+    
+    return ports
 
-    result = []
-    for port in ports:
-        try:
-            s = Serial(port)
-            s.close()
-            result.append(port)
-        except (OSError, SerialException):
-            pass
-    return result
 
-#ser = serial.Serial('/dev/tty.usbserial-DJ005O71', 1200, timeout=1)
+# Initialize serial connection
 ser = Serial(serial_ports()[0], 1200, timeout=1)
-#print(ser.name)
+
 
 def read_config(cm, answ_format):
+    """Read configuration from device.
+    
+    :param cm: Command to send (bytes)
+    :param answ_format: Format structure for parsing response
+    """
     print(cm)
     ser.write(cm)
     ser.flush()
@@ -48,20 +43,14 @@ def read_config(cm, answ_format):
     t = answ_format.parse(answ)
     print(t)
 
-read_config(connect_cmd.build(
-        dict()), 
-    info_message)
 
-read_config(read_cmd.build(
-        dict(command = 'BASIC')), 
-    basic_message)
+# Read configurations
+read_config(connect_cmd.build(dict()), info_message)
 
-read_config(read_cmd.build(
-        dict(command = 'PEDAL')), 
-    pedal_message)
+read_config(read_cmd.build(dict(command='BASIC')), basic_message)
 
-read_config(read_cmd.build(
-        dict(command = 'THROTTLE')), 
-    throttle_message)
+read_config(read_cmd.build(dict(command='PEDAL')), pedal_message)
 
-ser.close()    
+read_config(read_cmd.build(dict(command='THROTTLE')), throttle_message)
+
+ser.close()
